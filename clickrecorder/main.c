@@ -27,12 +27,11 @@ myCGEventCallback(CGEventTapProxy proxy, CGEventType type,
                   CGEventRef event, void *refcon)
 {
   // Paranoid sanity check.
-//  if ((type != kCGEventLeftMouseDown) && (type != kCGEventLeftMouseUp))
-//    return event;
+  if ((type != kCGEventLeftMouseDown) && (type != kCGEventLeftMouseUp))
+    return event;
   
   int upDown = 0;
   upDown = type == kCGEventLeftMouseDown | type == kCGEventRightMouseDown ? 1 : 0;
-//  upDown = type = kCGEventLeftMouseUp | type == kCGEventRightMouseUp ? 0 : 1;
   
   // The incoming keycode.
   // CGKeyCode keycode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
@@ -42,7 +41,6 @@ myCGEventCallback(CGEventTapProxy proxy, CGEventType type,
   
   CGEventTimestamp time = CGEventGetTimestamp(event);
   
-  //Keypress code goes here.
   printf("button %llu\t%u, %i, %i, %i\n", time, type, button, clickState, upDown);
   
   // We must return the event for it to be useful.
@@ -58,6 +56,7 @@ run(void)
   
   // Create an event tap. We are interested in key presses.
   //  eventMask = ((1 << kCGEventKeyDown) | (1 << kCGEventKeyUp));
+  // Listen for mouse up & down events
   eventMask = ((1 << kCGEventLeftMouseDown) | (1 << kCGEventRightMouseDown) | (1 << kCGEventLeftMouseUp) | (1 << kCGEventRightMouseUp));
 
   eventTap = CGEventTapCreate(
@@ -90,25 +89,27 @@ run(void)
 
 
 int main() {
+  // Request AX priviliges:
   Boolean isTrusted = false;
-  if (AXIsProcessTrustedWithOptions != NULL) {
-    // 10.9 and later
-    const void * keys[] = { kAXTrustedCheckOptionPrompt };
-    const void * values[] = { kCFBooleanTrue };
-    
-    CFDictionaryRef options = CFDictionaryCreate(
-                                                 kCFAllocatorDefault,
-                                                 keys,
-                                                 values,
-                                                 sizeof(keys) / sizeof(*keys),
-                                                 &kCFCopyStringDictionaryKeyCallBacks,
-                                                 &kCFTypeDictionaryValueCallBacks);
-    
-    isTrusted = AXIsProcessTrustedWithOptions(options);
+  // 10.9 and later
+  const void * keys[] = { kAXTrustedCheckOptionPrompt };
+  const void * values[] = { kCFBooleanTrue };
+  
+  CFDictionaryRef options = CFDictionaryCreate(
+                                               kCFAllocatorDefault,
+                                               keys,
+                                               values,
+                                               sizeof(keys) / sizeof(*keys),
+                                               &kCFCopyStringDictionaryKeyCallBacks,
+                                               &kCFTypeDictionaryValueCallBacks);
+  
+  isTrusted = AXIsProcessTrustedWithOptions(options);
+  
+  if (!isTrusted) {
+    exit(-1);
+    return -1;
+  } else {
+    return run();
   }
-  
-  printf("trusted? %i\n", isTrusted);
-  
-  run();
   
 }

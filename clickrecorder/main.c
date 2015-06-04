@@ -27,8 +27,8 @@ myCGEventCallback(CGEventTapProxy proxy, CGEventType type,
                   CGEventRef event, void *refcon)
 {
   // Paranoid sanity check.
-  if ((type != kCGEventLeftMouseDown) && (type != kCGEventLeftMouseUp))
-    return event;
+//  if ((type != kCGEventLeftMouseDown) && (type != kCGEventLeftMouseUp))
+//    return event;
   
   int upDown = 0;
   upDown = type == kCGEventLeftMouseDown | type == kCGEventRightMouseDown ? 1 : 0;
@@ -38,6 +38,8 @@ myCGEventCallback(CGEventTapProxy proxy, CGEventType type,
   
   CGMouseButton button = (CGMouseButton)CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber);
   int clickState = (int)CGEventGetIntegerValueField(event, kCGMouseEventClickState);
+  
+//  button = button == kCGMouseButtonLeft ? 0 : (button == kCGMouseButtonRight ? 2 : 3);
   
   CGEventTimestamp time = CGEventGetTimestamp(event);
   
